@@ -1,0 +1,11 @@
+.DS_STORE
+*.log
+*.pot
+*.pyc
+__pycache__/
+env/
+db.sqlite3
+.idea/
+venv/
+media/
+local_settings.py
