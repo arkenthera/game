@@ -24,7 +24,7 @@ SECRET_KEY = '3yynyhbnwvcwl%ja_i5x8i&jg3#jv-f&zxwk9v0z$x*1bgg_-b'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "137.117.129.24"]
+ALLOWED_HOSTS = ["127.0.0.1", "137.117.129.24", "game-leaderboard.westeurope.cloudapp.azure.com/"]
 
 # Application definition
 
