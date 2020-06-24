@@ -33,7 +33,7 @@ def iterative_create(size):
                               points=i)
 
 
-def create_users(backend, size):
+def create_users(size, backend):
     if backend == "django":
         bulk_create(size)
     else:

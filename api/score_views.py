@@ -11,6 +11,20 @@ highscore_leaderboard = Leaderboard("highscore")
 
 
 class ScoreSubmitAPIView(CreateAPIView):
+    """
+   Submits score to the user with the given user id
+
+    ---
+    parameters:
+    - name: body
+      description: JSON objects containing: user_id, score_worth
+        - user_id: ID of the user in UUID format
+          required: true
+          type: string
+        - score_worth: Number of points
+          required: true
+          type: float
+    """
     serializer_class = ScoreSubmitSerializer
 
     def perform_create(self, serializer):
@@ -34,6 +48,16 @@ class ScoreSubmitAPIView(CreateAPIView):
 
 
 class LeaderBoardAPIView(ListAPIView):
+    """
+   Lists the user by their rank
+
+    ---
+    parameters:
+    - {{country_iso_code}}: 2 words country iso code (TR, IT, FR, US etc)
+      definition: Returns all users if not provided
+      required: false
+      type: string
+    """
     serializer_class = UserLeaderBoardSerializer
     pagination_class = LargeResultsSetPagination
 
@@ -52,6 +76,16 @@ class LeaderBoardAPIView(ListAPIView):
 
 
 class LeaderBoardRedisAPIView(ListAPIView):
+    """
+   Lists the user by their rank
+
+    ---
+    parameters:
+    - {{country_iso_code}}: 2 words country code (TR, IT, FR, US etc)
+      definition: Returns all users if not provided
+      required: false
+      type: string
+    """
     serializer_class = UserLeaderBoardRedisSerializer
 
     def get_queryset(self):

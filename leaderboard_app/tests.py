@@ -56,6 +56,7 @@ class UserCreateAPIViewTestCase(APITestCase):
         self.display_name = fake.name()
         self.points = 1.23
         self.url = reverse("api:create-user")
+        self.url_bulk = reverse("api:create-user-bulk")
         self.country_iso_code = "TR"
 
     def test_create_user_success(self):
@@ -74,6 +75,11 @@ class UserCreateAPIViewTestCase(APITestCase):
                 "country_iso_code": self.country_iso_code}
         response = self.client.post(self.url, data=data)
         self.assertEqual(400, response.status_code)
+
+    def test_create_user_bulk_success(self):
+        data = {"number_of_objects": 20}
+        response = self.client.post(self.url_bulk, data=data)
+        self.assertEqual(201, response.status_code)
 
 
 class ScoreAPIViewTestCase(APITestCase):

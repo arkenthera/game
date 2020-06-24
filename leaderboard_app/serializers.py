@@ -35,8 +35,7 @@ class ScoreSubmitSerializer(serializers.ModelSerializer):
 
 
 class UserBulkCreateSerializer(serializers.Serializer):
-    size = serializers.CharField()
-    backend = serializers.CharField(default=None)
+    number_of_objects = serializers.IntegerField()
 
 
 class LargeResultsSetPagination(PageNumberPagination):
