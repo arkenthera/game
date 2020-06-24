@@ -73,5 +73,8 @@ class LeaderBoardRedisAPIView(ListAPIView):
             s["display_name"] = valid_json["display_name"]
             s["country"] = valid_json["country"]
 
-        print(queryset)
+        country_iso_code = self.kwargs['country_iso_code']
+        if country_iso_code:
+            queryset = [member for member in queryset if member['country'] == country_iso_code.upper()]
+
         return queryset

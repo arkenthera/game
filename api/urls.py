@@ -20,7 +20,8 @@ urlpatterns = [
     path('leaderboard', LeaderBoardAPIView.as_view(), {"country_iso_code": ""}, name="leaderboard"),
     path('leaderboard/<country_iso_code>', LeaderBoardAPIView.as_view(), name="leaderboard"),
 
-    path('leaderboard-redis', LeaderBoardRedisAPIView.as_view(), name="leaderboard-redis"),
+    path('leaderboard-redis', LeaderBoardRedisAPIView.as_view(), {"country_iso_code": ""}, name="leaderboard-redis"),
+    path('leaderboard-redis/<country_iso_code>', LeaderBoardRedisAPIView.as_view(), name="leaderboard-redis"),
 
     # swagger
     url(r'', schema_view, name="index")
