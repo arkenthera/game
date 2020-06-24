@@ -59,16 +59,16 @@ class UserGetAPIView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         user_id = self.kwargs['user_id']
-        result = validate_user(user_id)
-        user, message, status = result[0], result[1], result[2]
-        if user:
-            user = highscore_leaderboard.score_and_rank_for(str(user.user_id))
+        # result = validate_user(user_id)
+        # user, message, status = result[0], result[1], result[2]
+        if user_id:
+            user = highscore_leaderboard.score_and_rank_for(str(user_id))
             print(user)
             user, error = append_extra_data_user(user, ["country", "display_name"])
             print(user)
             instance_serializer = self.serializer_class(user)
-            return Response(instance_serializer.data, status=status)
-        return Response({"message": message}, status=status)
+            return Response(instance_serializer.data, status=200)
+        return Response({"message": "User Not Found"}, status=404)
 
 
 class UserBulkCreateAPIView(CreateAPIView):
@@ -86,5 +86,5 @@ class UserBulkCreateAPIView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         size = self.request.data.get('number_of_objects', None)
 
-        create_users(size, "django")
+        create_users(size, None)
         return Response({"message": "created"}, status=201)
