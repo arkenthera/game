@@ -52,7 +52,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class UserLeaderBoardRedisSerializer(serializers.Serializer):
-    member = serializers.CharField(max_length=33)
+    user_id = serializers.CharField(max_length=33, source="member")
     rank = serializers.IntegerField()
     score = serializers.FloatField()
     display_name = serializers.CharField(max_length=33)

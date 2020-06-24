@@ -4,8 +4,15 @@ from leaderboard_app.models import *
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from faker import Faker
+import random
 
 fake = Faker()
+
+country_codes = ['TR',
+                 'US',
+                 'FR',
+                 'ES',
+                 'IT']
 
 
 class UserGetAPIViewTestCase(APITestCase):
@@ -13,8 +20,9 @@ class UserGetAPIViewTestCase(APITestCase):
     def setUp(self):
         # valid
         self.display_name = fake.name()
-        self.created_user = Player.objects.create(display_name=self.display_name, rank=0, country_iso_code="tr",
-                                                  points=0.0)
+        self.points = random.randint(5, 150)
+        self.created_user = Player.objects.create(display_name=self.display_name, country_iso_code="tr",
+                                                  points=self.points)
         self.user_id = self.created_user.user_id
         self.valid_url = reverse("api:get-user", kwargs={"user_id": self.user_id})
 
@@ -37,12 +45,7 @@ class UserGetAPIViewTestCase(APITestCase):
         self.assertEqual(400, response.status_code)
 
     def test_get_user_success(self):
-        user_id_str = self.user_id.__str__()
         response = self.client.get(self.valid_url)
-        print(response.data)
-        self.assertEqual({'user_id': user_id_str, 'display_name': self.display_name, 'rank': 0,
-                          'country_iso_code': 'tr', 'points': 0.0}
-                         , response.data)
         self.assertEqual(200, response.status_code)
 
 
@@ -71,3 +74,45 @@ class UserCreateAPIViewTestCase(APITestCase):
                 "country_iso_code": self.country_iso_code}
         response = self.client.post(self.url, data=data)
         self.assertEqual(400, response.status_code)
+
+
+class ScoreAPIViewTestCase(APITestCase):
+    def setUp(self):
+        self.create_url = reverse("api:score-submit")
+        self.display_name = fake.name()
+        self.points = random.randint(5, 150)
+        self.country_iso_code = "TR"
+        self.created_user = Player.objects.create(display_name=self.display_name, country_iso_code="tr",
+                                                  points=self.points)
+
+    def test_score_submit_success(self):
+        data = {"score_worth": 200, "user_id": self.created_user.user_id}
+        response = self.client.post(self.create_url, data=data)
+        self.assertEqual(201, response.status_code)
+
+    def test_score_submit_not_exists(self):
+        data = {"score_worth": 200, "user_id": "11"}
+        response = self.client.post(self.create_url, data=data)
+        self.assertEqual(404, response.status_code)
+
+
+class LeaderBoardAPIViewTestCase(APITestCase):
+    def setUp(self):
+        self.leaderboard_url_country = reverse("api:leaderboard-redis",
+                                               kwargs={"country_iso_code": random.choice(country_codes)})
+        self.leaderboard_url = reverse("api:leaderboard-redis",
+                                       kwargs={"country_iso_code": ""})
+        self.leaderboard_url_pagination = "/leaderboard/FR?limit=" + str(random.randint(1, 100)) + "?offset=" + str(
+            random.randint(1, 100))
+
+    def test_leaderboard_get_success(self):
+        response = self.client.get(self.leaderboard_url)
+        self.assertEqual(200, response.status_code)
+
+    def test_leaderboard_country_get_success(self):
+        response = self.client.get(self.leaderboard_url_country)
+        self.assertEqual(200, response.status_code)
+
+    def test_leaderboard_pagination_get_success(self):
+        response = self.client.get(self.leaderboard_url_pagination)
+        self.assertEqual(200, response.status_code)

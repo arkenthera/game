@@ -1,7 +1,6 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from leaderboard_app.models import PointSubmission, Player
-from leaderboard_app.serializers import UserLeaderBoardRedisSerializer
 from leaderboard.leaderboard import Leaderboard
 from leaderboard_app.utils import update_user_data
 
@@ -19,8 +18,6 @@ def points_handler(sender, instance, created, **kwargs):
 
         update_user_data(user)
 
-        print(highscore_leaderboard.member_data_for(user.user_id))
-
 
 @receiver(post_save, sender=Player)
 def player_create_handler(sender, instance, created, **kwargs):
@@ -30,7 +27,3 @@ def player_create_handler(sender, instance, created, **kwargs):
                                            "display_name": instance.display_name})
 
         update_user_data(instance)
-
-        # print(highscore_leaderboard.member_data_for(instance.user_id))
-        print(highscore_leaderboard.score_and_rank_for(instance.user_id))
-        # print(serializer(member).data)

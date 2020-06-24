@@ -19,6 +19,10 @@ class TimeStamped(models.Model):
         super(TimeStamped, self).save(*args, **kwargs)
 
 
+class LeaderBoard(TimeStamped):
+    leaderboard_name = models.CharField(max_length=55, default="highscore")
+
+
 class CountryCode(models.TextChoices):
     TURKEY = 'TR', _('Turkey')
     USA = 'US', _('United States')
@@ -29,12 +33,14 @@ class CountryCode(models.TextChoices):
 
 class Player(TimeStamped):
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    leaderboard = models.ForeignKey(LeaderBoard, null=True, on_delete=models.CASCADE)
     display_name = models.CharField(max_length=55)
     country_iso_code = models.CharField(
         max_length=2,
         choices=CountryCode.choices
     )
     points = models.FloatField(default=0.0)
+    rank = models.IntegerField(null=True)
 
     class Meta:
         ordering = ["-points"]

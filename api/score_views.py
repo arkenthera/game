@@ -5,8 +5,7 @@ from api.user_validator import validate_user
 from django.db.models import F
 from django.db.models.expressions import Window
 from django.db.models.functions import DenseRank
-from leaderboard.leaderboard import Leaderboard
-import json
+from api.utils import *
 
 highscore_leaderboard = Leaderboard("highscore")
 
@@ -30,8 +29,8 @@ class ScoreSubmitAPIView(CreateAPIView):
         instance, message = self.perform_create(serializer)
         if instance:
             instance_serializer = ScoreSubmitSerializer(instance)
-            return Response(instance_serializer.data)
-        return Response({"message": message})
+            return Response(instance_serializer.data, status=201)
+        return Response({"message": message}, status=404)
 
 
 class LeaderBoardAPIView(ListAPIView):
@@ -56,25 +55,19 @@ class LeaderBoardRedisAPIView(ListAPIView):
     serializer_class = UserLeaderBoardRedisSerializer
 
     def get_queryset(self):
-        limit = int(self.request.query_params.get('limit', 1000))
-        offset = int(self.request.query_params.get('offset', 1))
-
-        if offset == 0:
-            offset = 1
-        # problem in starting index
-        starting_rank = int((int(offset) - 2) / int(offset))
-        ending_rank = offset + limit
-
+        limit = self.request.query_params.get('limit', 1000)
+        offset = self.request.query_params.get('offset', 1)
+        starting_rank, ending_rank = fix_offset_limit(limit, offset)
         queryset = highscore_leaderboard.members_from_rank_range(starting_rank=starting_rank, ending_rank=ending_rank)
-        for s in queryset:
-            byte_format = highscore_leaderboard.member_data_for(s["member"])
-            json_to_str = byte_format.decode('utf8').replace("'", '"')
-            valid_json = json.loads(json_to_str)
-            s["display_name"] = valid_json["display_name"]
-            s["country"] = valid_json["country"]
+        queryset, error = append_extra_data_queryset(queryset, ["country", "display_name"])
+
+        if error:
+            return Response("Unexpected Error", status=500)
 
         country_iso_code = self.kwargs['country_iso_code']
         if country_iso_code:
-            queryset = [member for member in queryset if member['country'] == country_iso_code.upper()]
+            queryset, error = filter_json(queryset, "country", country_iso_code.upper())
+            if error:
+                return Response("Unexpected Error in Filter(Valid country codes: TR, US, ES, IT, FR)", status=400)
 
         return queryset
