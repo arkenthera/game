@@ -86,5 +86,5 @@ class UserBulkCreateAPIView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         size = self.request.data.get('number_of_objects', None)
 
-        create_users(size, None)
+        create_users(size, "django")
         return Response({"message": "created"}, status=201)

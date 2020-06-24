@@ -3,6 +3,7 @@ from itertools import islice
 from faker import Faker
 import random
 from leaderboard.leaderboard import Leaderboard
+from leaderboard_app.utils import *
 import json
 
 highscore_leaderboard = Leaderboard("highscore")
@@ -19,6 +20,12 @@ def bulk_create(size):
     batch_size = 200
     objs = (Player(display_name=fake.name(), country_iso_code=random.choice(country_codes),
                    points=i) for i in range(int(size)))
+    for obj in objs:
+        highscore_leaderboard.rank_member(obj.user_id, obj.points,
+                                          {"country": obj.country_iso_code,
+                                           "display_name": obj.display_name})
+
+        update_user_data(obj)
 
     while True:
         batch = list(islice(objs, batch_size))
