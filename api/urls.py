@@ -1,6 +1,8 @@
+from api.swagger_views import *
 from api.user_views import *
 from api.score_views import *
 from django.urls import path
+from django.conf.urls import url
 
 app_name = 'api'
 
@@ -19,5 +21,8 @@ urlpatterns = [
     path('leaderboard/<country_iso_code>', LeaderBoardAPIView.as_view(), name="leaderboard"),
 
     path('leaderboard-redis', LeaderBoardRedisAPIView.as_view(), name="leaderboard-redis"),
+
+    # swagger
+    url(r'', schema_view, name="index")
 
 ]

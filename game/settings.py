@@ -24,7 +24,7 @@ SECRET_KEY = '3yynyhbnwvcwl%ja_i5x8i&jg3#jv-f&zxwk9v0z$x*1bgg_-b'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "137.117.129.24", "game-leaderboard.westeurope.cloudapp.azure.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "137.117.129.24", "http://game-leaderboard.westeurope.cloudapp.azure.com/"]
 
 # Application definition
 
@@ -36,7 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'leaderboard_app'
+    'rest_framework_swagger',
+    'leaderboard_app',
+
 ]
 
 MIDDLEWARE = [
@@ -69,6 +71,7 @@ TEMPLATES = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100
 }
@@ -120,3 +123,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "site_static"),
+)

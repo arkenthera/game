@@ -30,7 +30,6 @@ class CountryCode(models.TextChoices):
 class Player(TimeStamped):
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     display_name = models.CharField(max_length=55)
-    rank = models.IntegerField()
     country_iso_code = models.CharField(
         max_length=2,
         choices=CountryCode.choices
@@ -39,16 +38,6 @@ class Player(TimeStamped):
 
     class Meta:
         ordering = ["-points"]
-
-    def save(self, *args, **kwargs):
-        if not self.rank:
-            self.rank = Player.objects.count()
-        super(TimeStamped, self).save(*args, **kwargs)
-
-
-class UserPoint(TimeStamped):
-    user = models.ForeignKey(Player, on_delete=models.CASCADE)
-    total_point = models.FloatField(default=0.0)
 
 
 class PointSubmission(TimeStamped):

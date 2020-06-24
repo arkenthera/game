@@ -2,9 +2,7 @@ from leaderboard_app.serializers import *
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 from api.user_validator import validate_user
-from itertools import islice
-import random
-from faker import Faker
+from api.utils import create_users
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -18,6 +16,11 @@ class UserCreateAPIView(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = self.perform_create(serializer)
+        instance = Player.objects.annotate(rank=Window(
+            expression=DenseRank(),
+            order_by=F('points').desc(),
+
+        )).all().get(id=instance.id)
         instance_serializer = UserDisplaySerializer(instance)
         return Response(instance_serializer.data, status=201)
 
@@ -30,30 +33,22 @@ class UserGetAPIView(GenericAPIView):
         result = validate_user(user_id)
         user, message, status = result[0], result[1], result[2]
         if user:
+            user = Player.objects.annotate(rank=Window(
+                expression=DenseRank(),
+                order_by=F('points').desc(),
+
+            )).all().get(id=user.id)
             instance_serializer = UserDisplaySerializer(user)
             return Response(instance_serializer.data, status=status)
         return Response({"message": message}, status=status)
 
 
 class UserBulkCreateAPIView(CreateAPIView):
+    serializer_class = UserBulkCreateSerializer
 
     def create(self, request, *args, **kwargs):
-        fake = Faker()
-        size = request.data["size"]
+        size = self.request.data.get('size', None)
+        backend = self.request.data.get('backend', None)
 
-        country_codes = ['TR',
-                         'US',
-                         'FR',
-                         'ES',
-                         'IT']
-
-        batch_size = 200
-        objs = (Player(display_name=fake.name(), rank=0, country_iso_code=random.choice(country_codes),
-                       points=i) for i in range(int(size)))
-
-        while True:
-            batch = list(islice(objs, batch_size))
-            if not batch:
-                break
-            Player.objects.bulk_create(batch, batch_size)
+        create_users(backend, size)
         return Response({"message": "created"}, status=201)

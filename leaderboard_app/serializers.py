@@ -1,27 +1,29 @@
 from leaderboard_app.models import *
 from rest_framework import serializers
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.generics import ValidationError
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ("display_name", "country_iso_code", "points", "rank")
+        fields = ("display_name", "country_iso_code", "points")
 
 
 class UserDisplaySerializer(serializers.ModelSerializer):
+    rank = serializers.IntegerField()
+
     class Meta:
         model = Player
         fields = ("user_id", "display_name", "rank", "country_iso_code", "points")
 
 
 class UserLeaderBoardSerializer(serializers.ModelSerializer):
+    rank = serializers.IntegerField()
     country = serializers.CharField(source='country_iso_code')
 
     class Meta:
         model = Player
-        fields = ("rank", "points", "display_name", "country")
+        fields = ("rank", "points", "display_name", "country", "rank")
 
 
 class ScoreSubmitSerializer(serializers.ModelSerializer):
@@ -32,8 +34,13 @@ class ScoreSubmitSerializer(serializers.ModelSerializer):
         fields = ("user_id", "score_worth")
 
 
+class UserBulkCreateSerializer(serializers.Serializer):
+    size = serializers.CharField()
+    backend = serializers.CharField(default=None)
+
+
 class LargeResultsSetPagination(PageNumberPagination):
-    page_size = 10000
+    page_size = 5000
     page_size_query_param = 'page_size'
     max_page_size = 100000
 
@@ -48,3 +55,5 @@ class UserLeaderBoardRedisSerializer(serializers.Serializer):
     member = serializers.CharField(max_length=33)
     rank = serializers.IntegerField()
     score = serializers.FloatField()
+    display_name = serializers.CharField(max_length=33)
+    country = serializers.CharField(max_length=2)
