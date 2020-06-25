@@ -47,5 +47,5 @@ class Player(TimeStamped):
 
 
 class PointSubmission(TimeStamped):
-    user = models.ForeignKey(Player, on_delete=models.CASCADE)
+    user = models.ForeignKey(Player, null=True, on_delete=models.CASCADE)
     score_worth = models.FloatField(default=0.0)

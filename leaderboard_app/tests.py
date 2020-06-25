@@ -31,7 +31,7 @@ class UserGetAPIViewTestCase(APITestCase):
         self.uuid_not_exist_url = reverse("api:get-user", kwargs={"user_id": self.user_uuid_not_exists})
 
         # invalid uuid
-        self.user_invalid_uuid = "e4cdb120-28fc-4285-a78d-eb48660b77330"
+        self.user_invalid_uuid = "e4cdb120-28fc-428bh5-a78d-eb48667733sad0"
         self.invalid_uuid_url = reverse("api:get-user", kwargs={"user_id": self.user_invalid_uuid})
 
     def test_get_user_fail_user_not_exists(self):
@@ -55,31 +55,49 @@ class UserCreateAPIViewTestCase(APITestCase):
         self.rank = 0
         self.display_name = fake.name()
         self.points = 1.23
-        self.url = reverse("api:create-user")
+        self.create_url = reverse("api:create-user")
+        self.create_url = reverse("api:create-user")
         self.url_bulk = reverse("api:create-user-bulk")
         self.country_iso_code = "TR"
 
     def test_create_user_success(self):
         data = {"rank": self.rank, "display_name": self.display_name, "points": self.points,
                 "country_iso_code": self.country_iso_code}
-        response = self.client.post(self.url, data=data)
+        response = self.client.post(self.create_url, data=data)
         self.assertEqual(201, response.status_code)
 
     def test_create_user_fail_country_code(self):
         data = {"rank": self.rank, "display_name": self.display_name, "points": self.points}
-        response = self.client.post(self.url, data=data)
+        response = self.client.post(self.create_url, data=data)
         self.assertEqual(400, response.status_code)
 
     def test_create_user_fail_display_name(self):
         data = {"rank": self.rank, "points": self.points,
                 "country_iso_code": self.country_iso_code}
-        response = self.client.post(self.url, data=data)
+        response = self.client.post(self.create_url, data=data)
         self.assertEqual(400, response.status_code)
 
     def test_create_user_bulk_success(self):
         data = {"number_of_objects": 20}
         response = self.client.post(self.url_bulk, data=data)
         self.assertEqual(201, response.status_code)
+
+    def test_create_and_get(self):
+        data = {"rank": self.rank, "display_name": self.display_name, "points": self.points,
+                "country_iso_code": self.country_iso_code}
+        created = self.client.post(self.create_url, data=data)
+        self.assertEqual(201, created.status_code)
+        user_id = created.data["user_id"]
+        get_url = reverse("api:get-user", kwargs={"user_id": user_id})
+        user_data = self.client.get(get_url)
+        self.assertEqual(200, user_data.status_code)
+        self.assertEqual({
+            "user_id": user_id,
+            "rank": created.data["rank"],
+            "score": self.points,
+            "display_name": self.display_name,
+            "country": self.country_iso_code
+        }, user_data.data)
 
 
 class ScoreAPIViewTestCase(APITestCase):
@@ -99,7 +117,23 @@ class ScoreAPIViewTestCase(APITestCase):
     def test_score_submit_not_exists(self):
         data = {"score_worth": 200, "user_id": "11"}
         response = self.client.post(self.create_url, data=data)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(400, response.status_code)
+
+    def test_score_submit_and_get_user(self):
+        get_url = reverse("api:get-user", kwargs={"user_id": self.created_user.user_id})
+        user_data = self.client.get(get_url)
+        self.assertEqual(200, user_data.status_code)
+        points_before_submission = int(user_data.data["score"])
+
+        data = {"score_worth": 200, "user_id": self.created_user.user_id}
+        response = self.client.post(self.create_url, data=data)
+        self.assertEqual(201, response.status_code)
+
+        user_data = self.client.get(get_url)
+        self.assertEqual(200, user_data.status_code)
+        points_after_submission = int(user_data.data["score"])
+
+        self.assertEqual(points_after_submission - points_before_submission, 200)
 
 
 class LeaderBoardAPIViewTestCase(APITestCase):

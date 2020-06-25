@@ -59,16 +59,14 @@ class UserGetAPIView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         user_id = self.kwargs['user_id']
-        # result = validate_user(user_id)
-        # user, message, status = result[0], result[1], result[2]
+        result = validate_user(user_id)
+        user, user_id, message, status = result[0], result[1], result[2], result[3]
         if user_id:
             user = highscore_leaderboard.score_and_rank_for(str(user_id))
-            print(user)
             user, error = append_extra_data_user(user, ["country", "display_name"])
-            print(user)
             instance_serializer = self.serializer_class(user)
             return Response(instance_serializer.data, status=200)
-        return Response({"message": "User Not Found"}, status=404)
+        return Response({"message": message}, status=status)
 
 
 class UserBulkCreateAPIView(CreateAPIView):

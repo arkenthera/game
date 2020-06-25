@@ -31,20 +31,23 @@ class ScoreSubmitAPIView(CreateAPIView):
         user_id = self.request.data["user_id"]
         score_worth = self.request.data["score_worth"]
         result = validate_user(user_id)
-        user, message = result[0], result[1]
-        if user:
-            point = serializer.save(user=user, score_worth=score_worth)
-            return point, "success"
-        return None, message
+        user, user_id, message, status = result[0], result[1], result[2], result[3]
+        if user_id:
+            if user:
+                point = serializer.save(user=user, score_worth=score_worth)
+            else:
+                point = serializer.save(score_worth=score_worth)
+            return point, message, status
+        return None, message, status
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        instance, message = self.perform_create(serializer)
+        instance, message, status = self.perform_create(serializer)
         if instance:
             instance_serializer = ScoreSubmitSerializer(instance)
             return Response(instance_serializer.data, status=201)
-        return Response({"message": message}, status=404)
+        return Response({"message": message}, status=status)
 
 
 class LeaderBoardAPIView(ListAPIView):
